@@ -1,0 +1,25 @@
+.env
+pg_data/
+*.log
+
+# PostgreSQL data directory
+pg_data/
+.pgdata/
+
+# Environment files
+.env
+*.env.local
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+todo.md
+savings.txt
