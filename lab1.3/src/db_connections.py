@@ -3,7 +3,7 @@ import sys
 
 from dotenv import load_dotenv
 
-# Підтримка psycopg (v3 за методичкою) з fallback на psycopg2
+# Support for psycopg (v3 per manual) with fallback to psycopg2
 try:
     import psycopg
 
@@ -19,41 +19,38 @@ except ImportError:
         )
         sys.exit(1)
 
-# Завантаження змінних оточення з .env
+# Load environment variables from .env
 load_dotenv()
 
 session = None
 
 
 def get_connection():
-    """Створює або повертає активне з'єднання з базою даних."""
+    """Create or return an active database connection."""
     global session
     if session is not None and not getattr(session, "closed", False):
         return session
 
     database_url = os.getenv("DATABASE_URL")
     if not database_url:
-        raise ValueError("DATABASE_URL не знайдено у файлі .env!")
+        raise ValueError("DATABASE_URL was not found in the .env file!")
 
     print("Підключення до Supabase PostgreSQL...")
     try:
-        if PSYCOPG_VERSION == 3:
-            session = psycopg.connect(database_url)
-        else:
-            session = psycopg.connect(database_url)
+        session = psycopg.connect(database_url)
         print("Підключення успішно встановлено!\n")
         return session
     except Exception as e:
-        raise RuntimeError(f"Не вдалося підключитися до бази даних: {e}") from e
+        raise RuntimeError(f"Failed to connect to the database: {e}") from e
 
 
 def connect_db() -> None:
-    """Точка входу для тесту з'єднання."""
+    """Entry point for testing connection."""
     get_connection()
 
 
 def check_db_info(conn=None) -> None:
-    """Виводить базову системну інформацію про поточний сеанс (Етап 2)."""
+    """Print basic system information about current session (Stage 2)."""
     conn = conn or get_connection()
     with conn.cursor() as cur:
         cur.execute("""
@@ -74,7 +71,7 @@ def check_db_info(conn=None) -> None:
 
 
 def list_databases(conn=None) -> None:
-    """Виводить список усіх доступних баз даних (Етап 2.4, аналог \\l)."""
+    """List all available databases (Stage 2.4, analogous to \\l)."""
     conn = conn or get_connection()
     with conn.cursor() as cur:
         cur.execute("SELECT datname FROM pg_database ORDER BY datname;")
@@ -85,7 +82,7 @@ def list_databases(conn=None) -> None:
 
 
 def list_schemas(conn=None) -> None:
-    """Виводить список усіх схем через information_schema (Етап 2.5, аналог \\dn)."""
+    """List all schemas via information_schema (Stage 2.5, analogous to \\dn)."""
     conn = conn or get_connection()
     with conn.cursor() as cur:
         cur.execute("""
@@ -100,7 +97,7 @@ def list_schemas(conn=None) -> None:
 
 
 def check_catalogs_and_oids(conn=None) -> None:
-    """Дослідження системних каталогів pg_database, pg_namespace, pg_class та OID (Етап 5)."""
+    """Inspect system catalogs pg_database, pg_namespace, pg_class and OIDs (Stage 5)."""
     conn = conn or get_connection()
     with conn.cursor() as cur:
         print("=== OID бази 'postgres' (pg_database) ===")
@@ -142,62 +139,79 @@ def check_catalogs_and_oids(conn=None) -> None:
         print()
 
 
-def run_final_check(conn=None) -> None:
-    """Контрольна підсумкова перевірка всіх об'єктів (Етап 7 / check_lab1.py)."""
+def run_final_check(conn=None, hide_print=False) -> bool:
+    """Comprehensive final diagnostic check on all objects (Stage 7 / check_lab1.py)."""
     conn = conn or get_connection()
+    has_schemas = False
     with conn.cursor() as cur:
-        print("\n=== PostgreSQL ===")
+        if not hide_print:
+            print("\n=== PostgreSQL ===")
         cur.execute("SELECT version();")
-        print(cur.fetchone()[0])
+        db_data = cur.fetchone()
 
-        print("\n=== Connection ===")
+        if not hide_print and db_data:
+            print(db_data[0])
+
+        if not hide_print:
+            print("\n=== Connection ===")
         cur.execute("""
             SELECT current_database(), current_user, pg_backend_pid();
         """)
-        print(cur.fetchone())
+        if not hide_print:
+            print(cur.fetchone())
 
-        print("\n=== Schemas ===")
+        if not hide_print:
+            print("\n=== Schemas ===")
         cur.execute("""
             SELECT schema_name
             FROM information_schema.schemata
             WHERE schema_name IN ('core', 'staging')
             ORDER BY schema_name;
         """)
-        for row in cur.fetchall():
-            print(row)
+        if not hide_print:
+            for row in cur.fetchall():
+                print(row)
 
-        print("\n=== Tables ===")
+        if not hide_print:
+            print("\n=== Tables ===")
         cur.execute("""
             SELECT table_schema, table_name
             FROM information_schema.tables
             WHERE table_schema IN ('core', 'staging')
             ORDER BY table_schema, table_name;
         """)
-        for row in cur.fetchall():
-            print(row)
+        if not hide_print:
+            for row in cur.fetchall():
+                print(row)
 
-        print("\n=== Devices ===")
-        cur.execute("SELECT * FROM core.device;")
-        for row in cur.fetchall():
-            print(row)
-
-        print("\n=== Sensors ===")
-        cur.execute("SELECT * FROM core.sensor;")
-        for row in cur.fetchall():
-            print(row)
-
-        print("\n=== Measurements ===")
-        cur.execute("SELECT * FROM staging.raw_measurement;")
-        for row in cur.fetchall():
-            print(row)
-        print()
+        for title, query in (
+            ("Devices", "SELECT * FROM core.device;"),
+            ("Sensors", "SELECT * FROM core.sensor;"),
+            ("Measurements", "SELECT * FROM staging.raw_measurement;"),
+        ):
+            if not hide_print:
+                print(f"\n=== {title} ===")
+            try:
+                cur.execute(query)
+                if not hide_print:
+                    for row in cur.fetchall():
+                        print(row)
+            except Exception as e:
+                conn.rollback()
+                if not hide_print:
+                    print(f"[Notice] Could not read {title}: {e}")
+                has_schemas = True
+        if not hide_print:
+            print()
+        return has_schemas
 
 
 def close_db() -> None:
-    """Закриває з'єднання."""
+    """Close the database connection."""
     global session
     if session is not None and not getattr(session, "closed", False):
         session.close()
+        session = None
         print("З'єднання закрито.")
 
 
