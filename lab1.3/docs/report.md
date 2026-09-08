@@ -71,7 +71,17 @@
 
 Логічна ієрархія об'єктів у виконаній роботі має вигляд:
 
-$$\text{PostgreSQL Instance} \longrightarrow \text{Database: postgres} \longrightarrow \begin{cases} \text{Schema: core} \longrightarrow \begin{cases} \text{Table: device} \\ \text{Table: sensor (FK } \to \text{device)} \end{cases} \\ \text{Schema: staging} \longrightarrow \text{Table: raw\_measurement} \end{cases}$$
+```text
+PostgreSQL Instance
+│
+└── Database: postgres
+    ├── Schema: core
+    │   ├── Table: device
+    │   └── Table: sensor (FK -> device)
+    │
+    └── Schema: staging
+        └── Table: raw_measurement
+```
 
 - **Схема `core` (Ядро системи):** Призначена для збереження валідованих бізнес-сутностей предметної області (прилади та їхні сенсори). Забезпечує дотримання реляційної цілісності через `PRIMARY KEY` та `FOREIGN KEY`.
 - **Схема `staging` (Буферна зона завантаження):** Використовується в ETL/ELT-процесах як проміжний накопичувач "сирих" даних, що імпортуються з зовнішніх джерел (CSV-файлів, черг повідомлень). Поля таблиць у `staging` зазвичай мають слабку типізацію (`text`), що унеможливлює падіння імпорту через помилки форматування та дозволяє провести очищення й валідацію даних перед перенесенням у схему `core`.
@@ -92,7 +102,7 @@ $$\text{PostgreSQL Instance} \longrightarrow \text{Database: postgres} \longrigh
 
 ### 2.4. Сутність ідентифікатора OID (Object Identifier)
 
-- **`OID`** — це внутрішній 32-бітний беззнаковий цілочисельний ідентифікатор (`unsigned int`, діапазон від 0 до $4 \times 10^9$), який використовується ядром PostgreSQL для однозначної адресації системних об'єктів (баз даних, схем, таблиць, типів даних, функцій, індексів).
+- **`OID`** — це внутрішній 32-бітний беззнаковий цілочисельний ідентифікатор (`unsigned int`, діапазон від 0 до 4 × 10⁹, тобто понад 4 млрд), який використовується ядром PostgreSQL для однозначної адресації системних об'єктів (баз даних, схем, таблиць, типів даних, функцій, індексів).
 - **Важливе застереження:** OID не є унікальним глобально для прикладних даних і не гарантує безперервності після переповнення 32-бітного лічильника. У сучасних версіях PostgreSQL (`v12+`) таблиці створюються без системного стовпця OID за замовчуванням. Для прикладних сутностей слід використовувати стандартні первинні ключі: `bigint GENERATED ALWAYS AS IDENTITY` або `uuid`.
 
 ---
@@ -389,7 +399,7 @@ PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit
 2. **Мета лабораторної роботи:**  
    *Ознайомитися зі структурою PostgreSQL, навчитися підключатися до віддаленої хмарної БД у Supabase через Python (`psycopg`), створювати схеми і таблиці, наповнювати даними, інспектувати системні каталоги (`pg_database`, `pg_namespace`, `pg_class`, `information_schema`), вивчати OID та виконувати потоковий імпорт CSV через протокол `COPY FROM STDIN`.*
 3. **Схема взаємодії:**  
-   $$\text{Python} \longrightarrow \text{psycopg} \longrightarrow \text{Internet (TLS/SSL)} \longrightarrow \text{Supabase (Pooler)} \longrightarrow \text{PostgreSQL Server}$$
+   `Python` ➔ `psycopg` ➔ `Internet (TLS/SSL)` ➔ `Supabase (Pooler)` ➔ `PostgreSQL Server`
 4. **Параметри підключення:**  
    - `host`: `aws-0-[region].pooler.supabase.com`
    - `port`: `5432`
