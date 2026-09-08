@@ -114,7 +114,7 @@ def insert_initial_data(conn) -> None:
 def import_measurements_csv(conn, csv_filename: str = "measurements.csv") -> None:
     """Stream import measurements data from CSV file into staging.raw_measurement (Stage 6)."""
     print(f"--- Імпорт {csv_filename} через COPY FROM STDIN ---")
-    csv_path = os.path.join(os.path.dirname(__file__), csv_filename)
+    csv_path = os.path.join(os.path.dirname(__file__),"data", csv_filename)
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"File {csv_path} was not found!")
 
