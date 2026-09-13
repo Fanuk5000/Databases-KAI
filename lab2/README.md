@@ -1,4 +1,4 @@
-# PostgreSQL Lab 1.4: Column-Level Privileges & Roles in Supabase
+# PostgreSQL Lab 2: Column-Level Privileges & Roles in Supabase
 
 Лабораторна робота з дисципліни «Бази даних». Проєкт присвячено дослідженню рольової моделі керування доступом (Role-Based Access Control, RBAC) у СУБД PostgreSQL на інфраструктурі Supabase, розмежуванню прав на рівні окремих стовпців таблиці (Column-Level Privileges), роботі з ролями без права прямого входу (`NOLOGIN`), тимчасовому перемиканню контексту користувача через `SET ROLE` / `RESET ROLE` та обробці винятків безпеки ядра СУБД (`ERROR: 42501`).
 
@@ -7,7 +7,7 @@
 ## Структура проєкту
 
 ```text
-lab1.4/
+lab2/
 ├── README.md                   # Огляд проєкту, структура та протокол виконання
 ├── todo.md                     # Детальний чекліст, інструкції та теоретична база
 ├── savings.txt                 # Сирі збережені логи виконання запитів у Supabase

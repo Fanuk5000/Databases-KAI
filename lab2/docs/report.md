@@ -1,4 +1,4 @@
-# Лабораторна робота № 1.4: Керування доступом на рівні стовпців (Column-Level Privileges) та ролі у PostgreSQL (Supabase)
+# Лабораторна робота № 2: Керування доступом на рівні стовпців (Column-Level Privileges) та ролі у PostgreSQL (Supabase)
 
 **Дисципліна:** Бази даних  
 **Інфраструктура:** Хмарна платформа Supabase (керований кластер PostgreSQL)  
