@@ -11,6 +11,8 @@
 lab1.3/
 ├── .env                 # Змінні оточення (DATABASE_URL пулера, приховано у .gitignore)
 ├── .gitignore           # Виключення віртуального оточення (.venv) та секретів (.env)
+├── pyproject.toml       # Метадані проєкту та декларація залежностей (PEP 621)
+├── requirements.txt     # Зафіксовані версії залежностей (psycopg2, python-dotenv)
 ├── README.md            # Головна документація проєкту, інструкції та протокол роботи
 ├── todo.md              # Покроковий чекліст виконання та методичний довідник
 ├── data/
@@ -39,11 +41,19 @@ source .venv/bin/activate
 
 ### 2. Встановлення залежностей
 
-Для роботи з PostgreSQL використовується драйвер `psycopg` (v3 за методичкою з автоматичним fallback на `psycopg2`):
+Встановіть необхідні пакети (`psycopg2`, `python-dotenv`) одним із способів:
 
+**Варіант A: Через `requirements.txt` (рекомендовано)**
 ```bash
-pip install "psycopg[binary]" python-dotenv
+pip install -r requirements.txt
 ```
+
+**Варіант B: Через `pyproject.toml`**
+```bash
+pip install .
+```
+
+*Примітка: При використанні `uv` можна запустити `uv pip install -r requirements.txt` або `uv sync`.*
 
 ### 3. Конфігурація підключення (`.env`)
 
