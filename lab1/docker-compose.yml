@@ -12,7 +12,7 @@ services:
     volumes:
       - ./data:/data
       - ./sql:/docker-entrypoint-initdb.d:ro
-      - pg_data:/var/lib/postgresqlage: postgres:16-alpine/data
-age: postgres:16-alpine
+      - pg_data:/var/lib/postgresqlage
+
 volumes:
   pg_data:
