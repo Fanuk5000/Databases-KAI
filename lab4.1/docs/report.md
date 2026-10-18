@@ -4,7 +4,7 @@
 **Користувач БД:** `postgres`  
 **База даних:** `postgres`  
 **Схема БД:** `lab41`  
-**Хмарна інфраструктура:** Supabase Cloud (PostgreSQL 17.6 on x86_64-pc-linux-gnu, AWS, Session Pooler)  
+**Хмарна інфраструктура:** Supabase Cloud (PostgreSQL 17.11 on aarch64-unknown-linux-gnu, AWS, Session Pooler)  
 **Клієнтське середовище:** CLI-клієнт `psql`  
 
 ---
