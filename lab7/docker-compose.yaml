@@ -1,0 +1,61 @@
+# Docker Compose configuration for PostgreSQL database service
+# Following Compose Specification best practices (maintainability, security, resource control)
+
+services:
+  db:
+    image: postgres:17
+    container_name: postgres_db
+    restart: unless-stopped
+    shm_size: 128mb
+
+    # Expose PostgreSQL port
+    ports:
+      - "5432:5432"
+
+    # Environment variables loaded from .env
+    env_file:
+      - .env
+
+    # Data persistence using named volume
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Explicit isolated network
+    networks:
+      - db_network
+
+    # Health check to ensure service readiness
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    # Resource constraints to prevent host monopolization
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+# Explicit network definitions
+networks:
+  db_network:
+    driver: bridge
+
+# Named volumes placed at bottom of file
+volumes:
+  postgres_data:
+
+
+# to run the service, use the following command in the terminal:
+# docker-compose up -d
+# docker compose ps
+# source .env
+# to connect via psql, use the following command:
+# docker exec -it postgres_db psql -U $POSTGRES_USER -d $POSTGRES_DB
+
+
+# Without .env
+# Cause .env already exists in the container
+# docker exec -it postgres_db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
